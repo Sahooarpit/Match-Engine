@@ -7,7 +7,9 @@ import java.sql.Timestamp;
 
 @AllArgsConstructor
 public class Order {
+    @Getter
     private String orderId;
+    @Getter
     private String clientId;
     @Getter
     private Ticker ticker;
@@ -15,7 +17,7 @@ public class Order {
     private Side side;
     @Getter
     @Setter
-    private Float quantity;
+    private long quantity;
     @Getter
     private BigDecimal price;
     private Timestamp timestamp;
