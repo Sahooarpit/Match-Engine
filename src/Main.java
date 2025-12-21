@@ -1,12 +1,25 @@
-void main() {
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    IO.println(String.format("Hello and welcome!"));
+import java.math.BigDecimal;
+import java.util.List;
 
-    for (int i = 1; i <= 5; i++) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        IO.println("i = " + i);
+public class Main {
+    public static void main(String[] args) {
+        MatchEngine matchEngine = new MatchEngine();
+
+        Order buyOrder1 = new Order("client1", Ticker.GOOG, Side.BUY, 10L, new BigDecimal("100.50"));
+        Order buyOrder2 = new Order("client2", Ticker.GOOG, Side.BUY, 5L, new BigDecimal("100.60"));
+        Order sellOrder1 = new Order("client3", Ticker.GOOG, Side.SELL, 8L, new BigDecimal("100.55"));
+        Order sellOrder2 = new Order("client4", Ticker.GOOG, Side.SELL, 12L, new BigDecimal("100.70"));
+
+        System.out.println("Processing orders for GOOG...");
+        List<Trade> trades1 = matchEngine.processOrder(buyOrder1);
+        List<Trade> trades2 = matchEngine.processOrder(buyOrder2);
+        List<Trade> trades3 = matchEngine.processOrder(sellOrder1);
+        List<Trade> trades4 = matchEngine.processOrder(sellOrder2);
+
+        System.out.println("Trades executed:");
+        trades1.forEach(System.out::println);
+        trades2.forEach(System.out::println);
+        trades3.forEach(System.out::println);
+        trades4.forEach(System.out::println);
     }
-
 }

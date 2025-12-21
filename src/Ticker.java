@@ -1,5 +1,6 @@
 public enum Ticker {
     AAPL,
     TSLA,
-    USRD
+    USRD,
+    GOOG
 }
