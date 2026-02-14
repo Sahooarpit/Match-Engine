@@ -1,3 +1,5 @@
+package com.example.matchengine;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;

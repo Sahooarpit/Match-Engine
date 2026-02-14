@@ -1,3 +1,5 @@
+package com.example.matchengine;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +19,6 @@ public class Trade {
     private static final AtomicLong tradeIdGenerator = new AtomicLong();
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String tradeId;
     private String buyOrderId;
     private String sellOrderId;
@@ -27,8 +28,6 @@ public class Trade {
     private Long quantity;
     private BigDecimal price;
     private Timestamp timestamp;
-
-
 
     public Trade(String buyOrderId, String sellOrderId, String buyClientId, String sellClientId, Ticker ticker, Long quantity, BigDecimal price) {
         this.tradeId = String.valueOf(tradeIdGenerator.getAndIncrement());
@@ -40,6 +39,5 @@ public class Trade {
         this.quantity = quantity;
         this.price = price;
         this.timestamp = new Timestamp(System.currentTimeMillis());
-
     }
 }

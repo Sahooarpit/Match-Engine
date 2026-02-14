@@ -1,4 +1,7 @@
+package com.example.matchengine;
+
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -6,7 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.min;
 
+@Service
 @NoArgsConstructor
+
 public class MatchEngine {
 
     private final Map<Ticker, OrderBook> orderBooks = new ConcurrentHashMap<>();
