@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: Match Engine API
+  version: 1.0.0
+  description: API for submitting and matching trades
+paths:
+  /trade:
+    post:
+      summary: Submit a new order
+      operationId: submitOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeRequest'
+      responses:
+        '200':
+          description: Order processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    TradeRequest:
+      type: object
+      properties:
+        clientId:
+          type: string
+        ticker:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+        quantity:
+          type: integer
+          format: int64
+        price:
+          type: number
+          format: double
