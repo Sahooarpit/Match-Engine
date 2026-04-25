@@ -23,12 +23,12 @@ public class TradeController implements TradeApi {
     public ResponseEntity<String> submitOrder(TradeRequest tradeRequest) {
         Order order = new Order(
                 tradeRequest.getClientId(),
-                Ticker.valueOf(tradeRequest.getTicker().getValue()),
+                Ticker.valueOf(tradeRequest.getTicker()),
                 Side.valueOf(tradeRequest.getSide().getValue()),
                 tradeRequest.getQuantity(),
                 BigDecimal.valueOf(tradeRequest.getPrice())
         );
-        List<com.example.matchengine.Trade> trades = matchEngine.processOrder(order);
+        List<Trade> trades = matchEngine.processOrder(order);
         String responseMessage = "Order processed. " + trades.size() + " trade(s) executed.";
         return ResponseEntity.ok(responseMessage);
     }
