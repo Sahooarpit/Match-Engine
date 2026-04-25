@@ -1,52 +1,53 @@
 package com.example.matchengine;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.concurrent.atomic.AtomicLong;
+import java.time.Instant;
+import java.util.UUID;
 
-@AllArgsConstructor
+@Entity
+@Table(name = "orders") // Use "orders" as the table name, as "order" is a reserved SQL keyword
+@Getter
+@Setter
+@NoArgsConstructor
 public class Order {
-    @Transient
-    private static final AtomicLong tradeIdGenerator = new AtomicLong();
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     private String orderId;
-    @Getter
+
     private String clientId;
-    @Getter
+
+    @Enumerated(EnumType.STRING)
     private Ticker ticker;
-    @Getter
+
+    @Enumerated(EnumType.STRING)
     private Side side;
-    @Getter
-    @Setter
-    private long quantity;
-    @Getter
+
+    @Column(precision = 19, scale = 8)
     private BigDecimal price;
-    @Getter
-    private Timestamp timestamp;
+
+    private long originalQuantity;
+    private long remainingQuantity;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
+    private Instant createdAt;
 
     public Order(String clientId, Ticker ticker, Side side, long quantity, BigDecimal price) {
-        this.orderId =String.valueOf(Order.tradeIdGenerator.getAndIncrement());
+        this.orderId = UUID.randomUUID().toString();
         this.clientId = clientId;
         this.ticker = ticker;
         this.side = side;
-        this.quantity = quantity;
         this.price = price;
-        this.timestamp = new Timestamp(System.currentTimeMillis());
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
+        this.originalQuantity = quantity;
+        this.remainingQuantity = quantity;
+        this.status = OrderStatus.OPEN; // Default status for a new order
+        this.createdAt = Instant.now();
     }
 }
+

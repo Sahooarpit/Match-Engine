@@ -22,6 +22,8 @@ public class Client {
 
     private String name;
 
+    private Long balance;
+
     private Instant createdAt;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

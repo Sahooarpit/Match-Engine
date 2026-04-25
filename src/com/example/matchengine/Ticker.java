@@ -4,5 +4,6 @@ public enum Ticker {
     AAPL,
     TSLA,
     USRD,
-    GOOG
+    GOOG,
+    USDT // Represents a cash equivalent
 }

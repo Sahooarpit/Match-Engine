@@ -39,21 +39,3 @@ public class PortfolioHolding {
 
 // --- Composite Primary Key Class ---
 
-class PortfolioHoldingId implements Serializable {
-    private String client; // Must match the field name in PortfolioHolding
-    private Ticker ticker; // Must match the field name in PortfolioHolding
-
-    // equals and hashCode are essential for composite keys
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PortfolioHoldingId that = (PortfolioHoldingId) o;
-        return Objects.equals(client, that.client) && ticker == that.ticker;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(client, ticker);
-    }
-}
