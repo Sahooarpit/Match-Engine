@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Entity
 @Table(name = "portfolio_holdings")
@@ -35,6 +33,4 @@ public class PortfolioHolding {
         this.quantity = quantity;
     }
 }
-
-// --- Composite Primary Key Class ---
 
