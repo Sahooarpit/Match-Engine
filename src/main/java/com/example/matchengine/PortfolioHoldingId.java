@@ -4,16 +4,15 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class PortfolioHoldingId implements Serializable {
-    private String client; // Must match the field name in PortfolioHolding
-    private Ticker ticker; // Must match the field name in PortfolioHolding
+    private String client;
+    private String ticker; // Changed from Ticker enum to String
 
-    // equals and hashCode are essential for composite keys
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PortfolioHoldingId that = (PortfolioHoldingId) o;
-        return Objects.equals(client, that.client) && ticker == that.ticker;
+        return Objects.equals(client, that.client) && Objects.equals(ticker, that.ticker);
     }
 
     @Override

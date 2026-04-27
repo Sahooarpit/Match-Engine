@@ -21,6 +21,107 @@ paths:
             text/plain:
               schema:
                 type: string
+
+  /clients:
+    post:
+      summary: Create a new client
+      operationId: createClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+      responses:
+        '201':
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+
+  /clients/{clientId}/add-balance:
+    post:
+      summary: Add balance or stock to a client's portfolio
+      operationId: addBalance
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceRequest'
+      responses:
+        '200':
+          description: Balance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioHolding'
+
+  /clients/{clientId}/portfolio:
+    get:
+      summary: Get a client's portfolio (cash and stock holdings)
+      operationId: getPortfolio
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of the client's holdings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PortfolioHolding'
+
+  /clients/{clientId}/pending-orders:
+    get:
+      summary: Get a client's pending (open) orders
+      operationId: getPendingOrders
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of the client's pending orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+  
+  /instruments:
+    post:
+      summary: Add a new tradable instrument
+      operationId: addInstrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstrumentRequest'
+      responses:
+        '201':
+          description: Instrument added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instrument'
+
 components:
   schemas:
     TradeRequest:
@@ -39,3 +140,80 @@ components:
         price:
           type: number
           format: double
+
+    ClientRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        clientId:
+          type: string
+
+    Client:
+      type: object
+      properties:
+        clientId:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    BalanceRequest:
+      type: object
+      properties:
+        ticker:
+          type: string
+        quantity:
+          type: number
+          format: double
+
+    PortfolioHolding:
+      type: object
+      properties:
+        ticker:
+          type: string
+        quantity:
+          type: number
+          format: double
+
+    Order:
+      type: object
+      properties:
+        orderId:
+          type: string
+        ticker:
+          type: string
+        side:
+          type: string
+        price:
+          type: number
+          format: double
+        originalQuantity:
+          type: integer
+          format: int64
+        remainingQuantity:
+          type: integer
+          format: int64
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          
+    InstrumentRequest:
+      type: object
+      properties:
+        ticker:
+          type: string
+        description:
+          type: string
+
+    Instrument:
+      type: object
+      properties:
+        ticker:
+          type: string
+        description:
+          type: string

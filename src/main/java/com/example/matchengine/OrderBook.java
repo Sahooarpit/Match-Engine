@@ -7,16 +7,13 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.TreeMap;
 
+@Getter
 public class OrderBook {
-    @Getter
     private final TreeMap<BigDecimal, Deque<Order>> bids = new TreeMap<>(Collections.reverseOrder());
-    @Getter
     private final TreeMap<BigDecimal, Deque<Order>> asks = new TreeMap<>();
-    @Getter
-    private final Ticker ticker;
+    private final String ticker;
 
-    public OrderBook(Ticker ticker) {
+    public OrderBook(String ticker) { // Changed from Ticker enum to String
         this.ticker = ticker;
     }
-
 }

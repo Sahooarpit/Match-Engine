@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orders") // Use "orders" as the table name, as "order" is a reserved SQL keyword
+@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,13 +21,13 @@ public class Order {
 
     private String clientId;
 
-    @Enumerated(EnumType.STRING)
-    private Ticker ticker;
+    @Column(name = "ticker", length = 10, nullable = false)
+    private String ticker; // Changed from Ticker enum to String
 
     @Enumerated(EnumType.STRING)
     private Side side;
 
-    @Column(precision = 19, scale = 8)
+    @Column(precision = 19, scale = 4)
     private BigDecimal price;
 
     private long originalQuantity;
@@ -38,7 +38,7 @@ public class Order {
 
     private Instant createdAt;
 
-    public Order(String clientId, Ticker ticker, Side side, long quantity, BigDecimal price) {
+    public Order(String clientId, String ticker, Side side, long quantity, BigDecimal price) {
         this.orderId = UUID.randomUUID().toString();
         this.clientId = clientId;
         this.ticker = ticker;
@@ -46,8 +46,7 @@ public class Order {
         this.price = price;
         this.originalQuantity = quantity;
         this.remainingQuantity = quantity;
-        this.status = OrderStatus.OPEN; // Default status for a new order
+        this.status = OrderStatus.OPEN;
         this.createdAt = Instant.now();
     }
 }
-

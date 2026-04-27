@@ -5,14 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "portfolio_holdings")
 @Getter
 @Setter
 @NoArgsConstructor
-@IdClass(PortfolioHoldingId.class) // Specifies composite primary key class
+@IdClass(PortfolioHoldingId.class)
 public class PortfolioHolding {
 
     @Id
@@ -21,14 +23,13 @@ public class PortfolioHolding {
     private Client client;
 
     @Id
-    @Enumerated(EnumType.STRING)
     @Column(name = "ticker", length = 10)
-    private Ticker ticker;
+    private String ticker; // Changed from Ticker enum to String
 
-    @Column(nullable = false, precision = 19, scale = 8) // Using BigDecimal for quantity for precision
+    @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal quantity;
 
-    public PortfolioHolding(Client client, Ticker ticker, BigDecimal quantity) {
+    public PortfolioHolding(Client client, String ticker, BigDecimal quantity) {
         this.client = client;
         this.ticker = ticker;
         this.quantity = quantity;
