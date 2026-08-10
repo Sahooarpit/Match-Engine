@@ -20,7 +20,13 @@ public class Client {
     @Id
     private String clientId;
 
-    private String name;
+    @Column(unique = true)
+    private String username;
+
+    private String password;
+    
+    @Column(unique = true)
+    private String email;
 
     private Long balance;
 
@@ -29,9 +35,11 @@ public class Client {
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<PortfolioHolding> holdings = new HashSet<>();
 
-    public Client(String name) {
+    public Client(String username, String password, String email) {
         this.clientId = UUID.randomUUID().toString();
-        this.name = name;
+        this.username = username;
+        this.password = password;
+        this.email = email;
         this.createdAt = Instant.now();
     }
 }

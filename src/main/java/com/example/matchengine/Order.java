@@ -19,7 +19,9 @@ public class Order {
     @Id
     private String orderId;
 
-    private String clientId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id")
+    private Client client;
 
     @Column(name = "ticker", length = 10, nullable = false)
     private String ticker; // Changed from Ticker enum to String
@@ -38,9 +40,9 @@ public class Order {
 
     private Instant createdAt;
 
-    public Order(String clientId, String ticker, Side side, long quantity, BigDecimal price) {
+    public Order(Client client, String ticker, Side side, long quantity, BigDecimal price) {
         this.orderId = UUID.randomUUID().toString();
-        this.clientId = clientId;
+        this.client = client;
         this.ticker = ticker;
         this.side = side;
         this.price = price;

@@ -1,32 +1,36 @@
 package com.example.matchengine;
 
-import com.example.matchengine.api.TradeApi;
 import com.example.matchengine.model.TradeRequest;
-import jakarta.validation.Valid; // Changed to jakarta.validation.Valid
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.matchengine.repository.ClientRepository;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-public class TradeController implements TradeApi {
+@RequiredArgsConstructor
+public class TradeController {
 
     private final MatchEngine matchEngine;
+    private final ClientRepository clientRepository;
 
-    @Autowired
-    public TradeController(MatchEngine matchEngine) {
-        this.matchEngine = matchEngine;
-    }
+    @PostMapping("/trade")
+    public ResponseEntity<String> submitOrder(@Valid @RequestBody TradeRequest tradeRequest) {
+        String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Client client = clientRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Client not found for username: " + username));
 
-    @Override
-    public ResponseEntity<String> submitOrder(@Valid TradeRequest tradeRequest) {
-        // The Ticker enum is gone, so we pass the ticker as a String directly.
         Order order = new Order(
-                tradeRequest.getClientId(),
-                tradeRequest.getTicker(), // Pass the String directly
-                Side.valueOf(tradeRequest.getSide().toString()), // Use toString() for enum conversion
+                client,
+                tradeRequest.getTicker(),
+                Side.valueOf(tradeRequest.getSide().toString()),
                 tradeRequest.getQuantity(),
                 BigDecimal.valueOf(tradeRequest.getPrice())
         );

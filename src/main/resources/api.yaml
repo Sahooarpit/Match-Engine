@@ -4,10 +4,29 @@ info:
   version: 1.0.0
   description: API for submitting and matching trades
 paths:
+  /auth/register:
+    post:
+      summary: Register a new client
+      operationId: registerClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+      responses:
+        '201':
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
   /trade:
     post:
       summary: Submit a new order
       operationId: submitOrder
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -22,34 +41,12 @@ paths:
               schema:
                 type: string
 
-  /clients:
-    post:
-      summary: Create a new client
-      operationId: createClient
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ClientRequest'
-      responses:
-        '201':
-          description: Client created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Client'
-
-  /clients/{clientId}/add-balance:
+  /portfolio/add-balance:
     post:
       summary: Add balance or stock to a client's portfolio
       operationId: addBalance
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -64,16 +61,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PortfolioHolding'
 
-  /clients/{clientId}/portfolio:
+  /portfolio:
     get:
       summary: Get a client's portfolio (cash and stock holdings)
       operationId: getPortfolio
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: A list of the client's holdings
@@ -84,16 +77,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/PortfolioHolding'
 
-  /clients/{clientId}/pending-orders:
+  /pending-orders:
     get:
       summary: Get a client's pending (open) orders
       operationId: getPendingOrders
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: A list of the client's pending orders
@@ -127,8 +116,6 @@ components:
     TradeRequest:
       type: object
       properties:
-        clientId:
-          type: string
         ticker:
           type: string
         side:
@@ -144,9 +131,11 @@ components:
     ClientRequest:
       type: object
       properties:
-        name:
+        username:
           type: string
-        clientId:
+        password:
+          type: string
+        email:
           type: string
 
     Client:
@@ -154,7 +143,7 @@ components:
       properties:
         clientId:
           type: string
-        name:
+        username:
           type: string
         createdAt:
           type: string
@@ -217,3 +206,8 @@ components:
           type: string
         description:
           type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

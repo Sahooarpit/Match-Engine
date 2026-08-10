@@ -23,8 +23,14 @@ public class Trade {
 
     private String buyOrderId;
     private String sellOrderId;
-    private String buyClientId;
-    private String sellClientId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buy_client_id")
+    private Client buyClient;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sell_client_id")
+    private Client sellClient;
 
     @Column(name = "ticker", length = 10, nullable = false)
     private String ticker; // Changed from Ticker enum to String
@@ -36,12 +42,12 @@ public class Trade {
 
     private Instant timestamp;
 
-    public Trade(String buyOrderId, String sellOrderId, String buyClientId, String sellClientId, String ticker, Long quantity, BigDecimal price) {
+    public Trade(String buyOrderId, String sellOrderId, Client buyClient, Client sellClient, String ticker, Long quantity, BigDecimal price) {
         this.tradeId = UUID.randomUUID().toString();
         this.buyOrderId = buyOrderId;
         this.sellOrderId = sellOrderId;
-        this.buyClientId = buyClientId;
-        this.sellClientId = sellClientId;
+        this.buyClient = buyClient;
+        this.sellClient = sellClient;
         this.ticker = ticker;
         this.quantity = quantity;
         this.price = price;

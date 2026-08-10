@@ -18,18 +18,8 @@ public class ClientService {
     private final PortfolioHoldingRepository portfolioHoldingRepository;
     private final InstrumentRepository instrumentRepository; // Add InstrumentRepository
 
-    @Transactional
-    public Client findOrCreateClient(String clientId) {
-        return clientRepository.findById(clientId)
-                .orElseGet(() -> {
-                    Client newClient = new Client(clientId);
-                    newClient.setClientId(clientId);
-                    return clientRepository.save(newClient);
-                });
-    }
-
     public void validateOrder(Order order) {
-        Client client = findOrCreateClient(order.getClientId());
+        Client client = order.getClient();
 
         // Validate that the instrument exists
         instrumentRepository.findById(order.getTicker())
@@ -37,25 +27,25 @@ public class ClientService {
 
         if (order.getSide() == Side.BUY) {
             BigDecimal requiredCash = order.getPrice().multiply(BigDecimal.valueOf(order.getOriginalQuantity()));
-            PortfolioHolding cashHolding = portfolioHoldingRepository.findByClientClientIdAndTicker(order.getClientId(), "USDT")
+            PortfolioHolding cashHolding = portfolioHoldingRepository.findByClientClientIdAndTicker(client.getClientId(), "USDT")
                     .orElse(new PortfolioHolding(client, "USDT", BigDecimal.ZERO));
 
             if (cashHolding.getQuantity().compareTo(requiredCash) < 0) {
-                throw new IllegalStateException("Insufficient funds for client " + order.getClientId() + ". Required: " + requiredCash + ", Available: " + cashHolding.getQuantity());
+                throw new IllegalStateException("Insufficient funds for client " + client.getClientId() + ". Required: " + requiredCash + ", Available: " + cashHolding.getQuantity());
             }
         } else { // SELL order
-            PortfolioHolding stockHolding = portfolioHoldingRepository.findByClientClientIdAndTicker(order.getClientId(), order.getTicker())
+            PortfolioHolding stockHolding = portfolioHoldingRepository.findByClientClientIdAndTicker(client.getClientId(), order.getTicker())
                     .orElse(new PortfolioHolding(client, order.getTicker(), BigDecimal.ZERO));
 
             if (stockHolding.getQuantity().compareTo(BigDecimal.valueOf(order.getOriginalQuantity())) < 0) {
-                throw new IllegalStateException("Insufficient stock for client " + order.getClientId() + ". Required: " + order.getOriginalQuantity() + ", Available: " + stockHolding.getQuantity());
+                throw new IllegalStateException("Insufficient stock for client " + client.getClientId() + ". Required: " + order.getOriginalQuantity() + ", Available: " + stockHolding.getQuantity());
             }
         }
     }
 
     @Transactional
     public void updateHolding(String clientId, String ticker, BigDecimal quantityChange) {
-        Client client = findOrCreateClient(clientId);
+        Client client = clientRepository.findById(clientId).get();
 
         // Validate that the instrument exists before updating a holding
         instrumentRepository.findById(ticker)

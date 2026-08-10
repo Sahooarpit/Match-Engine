@@ -83,7 +83,7 @@ public class MatchEngine {
                 Order sellOrder = iterator.next();
                 long matchQuantity = min(buyOrder.getRemainingQuantity(), sellOrder.getRemainingQuantity());
 
-                Trade trade = new Trade(buyOrder.getOrderId(), sellOrder.getOrderId(), buyOrder.getClientId(), sellOrder.getClientId(), buyOrder.getTicker(), matchQuantity, sellOrder.getPrice());
+                Trade trade = new Trade(buyOrder.getOrderId(), sellOrder.getOrderId(), buyOrder.getClient(), sellOrder.getClient(), buyOrder.getTicker(), matchQuantity, sellOrder.getPrice());
                 executedTrades.add(trade);
 
                 buyOrder.setRemainingQuantity(buyOrder.getRemainingQuantity() - matchQuantity);
@@ -107,7 +107,7 @@ public class MatchEngine {
                 Order buyOrder = iterator.next();
                 long matchQuantity = min(sellOrder.getRemainingQuantity(), buyOrder.getRemainingQuantity());
 
-                Trade trade = new Trade(buyOrder.getOrderId(), sellOrder.getOrderId(), buyOrder.getClientId(), sellOrder.getClientId(), sellOrder.getTicker(), matchQuantity, buyOrder.getPrice());
+                Trade trade = new Trade(buyOrder.getOrderId(), sellOrder.getOrderId(), buyOrder.getClient(), sellOrder.getClient(), sellOrder.getTicker(), matchQuantity, buyOrder.getPrice());
                 executedTrades.add(trade);
 
                 sellOrder.setRemainingQuantity(sellOrder.getRemainingQuantity() - matchQuantity);
@@ -145,10 +145,10 @@ public class MatchEngine {
         if (!executedTrades.isEmpty()) {
             tradeRepository.saveAll(executedTrades);
             for (Trade trade : executedTrades) {
-                clientService.updateHolding(trade.getSellClientId(), trade.getTicker(), BigDecimal.valueOf(trade.getQuantity()).negate());
-                clientService.updateHolding(trade.getSellClientId(), "USDT", trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity())));
-                clientService.updateHolding(trade.getBuyClientId(), trade.getTicker(), BigDecimal.valueOf(trade.getQuantity()));
-                clientService.updateHolding(trade.getBuyClientId(), "USDT", trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity())).negate());
+                clientService.updateHolding(trade.getSellClient().getClientId(), trade.getTicker(), BigDecimal.valueOf(trade.getQuantity()).negate());
+                clientService.updateHolding(trade.getSellClient().getClientId(), "USDT", trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity())));
+                clientService.updateHolding(trade.getBuyClient().getClientId(), trade.getTicker(), BigDecimal.valueOf(trade.getQuantity()));
+                clientService.updateHolding(trade.getBuyClient().getClientId(), "USDT", trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity())).negate());
             }
         }
     }
