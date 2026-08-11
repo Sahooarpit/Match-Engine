@@ -1,4 +1,4 @@
-# Match Engine
+# Stock Market Match Engine
 
 This project is a full-stack stock trading application featuring a Spring Boot back-end and a React front-end. It includes user authentication, portfolio management, and a real-time order matching engine.
 
