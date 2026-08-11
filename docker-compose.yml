@@ -2,30 +2,43 @@ version: '3.8'
 
 services:
   postgres-db:
-    image: postgres:16 # Using a specific version is good practice
+    image: postgres:16
     container_name: postgres-db
     environment:
       POSTGRES_DB: matchenginedb
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432" # Map host port to container port for local access if needed
+      - "5432:5432"
     volumes:
-      - ./db-data:/var/lib/postgresql/data # Persist data on the host machine
-      - ./init-scripts:/docker-entrypoint-initdb.d # Mount initialization scripts
+      - ./db-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - app-network
 
   match-engine-app:
-    build: . # Build the image from the Dockerfile in the current directory
+    build: .
     container_name: match-engine-app
     ports:
       - "8080:8080"
     depends_on:
-      - postgres-db # Ensure the database is ready before the app starts
+      - postgres-db
     environment:
-      # The app will connect to the DB using the service name 'postgres-db'
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/matchenginedb
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    ports:
+      - "3000:80"
+    depends_on:
+      - match-engine-app
     networks:
       - app-network
 
@@ -34,4 +47,4 @@ networks:
     driver: bridge
 
 volumes:
-  db-data: # Explicitly define the volume for clarity
+  db-data:

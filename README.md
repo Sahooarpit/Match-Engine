@@ -1,157 +1,77 @@
-# Match Engine API
+# Match Engine
 
-This project is a fully functional, containerized simulation of a financial exchange's core matching engine. It is built with Spring Boot and uses a PostgreSQL database for data persistence. The entire application stack can be run easily using Docker Compose.
+This project is a full-stack stock trading application featuring a Spring Boot back-end and a React front-end. It includes user authentication, portfolio management, and a real-time order matching engine.
 
 ## Features
 
-- **In-Memory Order Books**: For high-performance, real-time order matching.
-- **Persistent Database**: All trades, orders, clients, and holdings are persisted in a PostgreSQL database.
-- **Data Recovery**: The application loads all open orders from the database on startup to reconstruct the live order books.
-- **Dynamic Instruments**: New tradable instruments (stocks) can be added dynamically via an API endpoint.
-- **Client and Portfolio Management**: APIs to create clients, manage their balances (cash and stock), and view their portfolios and pending orders.
-- **API-First Design**: The API is defined using OpenAPI 3.0 (`api.yaml`) and controllers are generated from this specification.
-- **Containerized**: The entire application (Spring Boot app + PostgreSQL database) is designed to run in Docker containers managed by Docker Compose.
+- **User Authentication:** Secure user registration and login using JWT.
+- **Portfolio Management:** View and manage your stock and cash balances.
+- **Order Matching Engine:** Real-time matching of buy and sell orders.
+- **Trade Execution:** Buy and sell stocks using USDT as the currency.
+- **Transaction History:** View a complete history of your past trades.
+- **Containerized:** The entire application can be run with a single Docker Compose command.
 
----
+## About This Project
 
-## How to Run the Application
+This project was designed to be a comprehensive, real-world example of a modern web application, demonstrating skills across back-end, front-end, security, and DevOps.
 
-This project is designed to be run with Docker and Docker Compose. You do not need to have Java or Maven installed on your local machine.
+### Back-End Architecture
 
-### Prerequisites
+The back-end is built with Spring Boot and features a real-time, in-memory **Order Matching Engine**. The core of the engine uses a **price-time priority** algorithm to ensure fairness in trade execution. To handle high-performance and thread-safe operations under concurrent load, I utilized advanced Java data structures, including a `ConcurrentHashMap` to manage the order books for different tickers and a `Deque` for the order queues at each price level.
+
+Data integrity is paramount in a financial application. To guarantee this, all critical database operations (such as updating user balances and stock holdings after a trade) are wrapped in a single service method and annotated with `@Transactional`. This ensures **ACID properties**, meaning a trade and its corresponding portfolio updates succeed or fail as a single, atomic unit, preventing data corruption.
+
+### Security
+
+Security is implemented from the ground up using Spring Security with a stateless **JSON Web Token (JWT)** authentication flow. When a user logs in, the back-end generates a signed JWT. This token is then required in the `Authorization` header for all protected API endpoints. A custom `JwtRequestFilter` intercepts each request to validate the token, ensuring that every API call is authenticated without relying on server-side sessions. This stateless approach is crucial for scalability and building microservices-ready applications.
+
+### Front-End Architecture
+
+The front-end is a responsive **Single-Page Application (SPA)** built with React. It features a clean, component-based architecture (e.g., `Dashboard`, `Login`, `Transactions`) and uses React Hooks (`useState`, `useEffect`) for efficient state management and handling component lifecycle events. Communication with the back-end REST API is handled asynchronously using `axios`, with the JWT managed securely in the browser's local storage to maintain the user's session.
+
+### DevOps and Containerization
+
+The entire application stack is containerized using **Docker and Docker Compose**, allowing the project (front-end, back-end, and database) to be launched with a single command (`docker-compose up`). For the React front-end, I implemented a **multi-stage Docker build**. The first stage uses a Node.js image to build the static assets, and the second stage copies these assets into a lightweight `nginx` container for serving. This best practice results in a smaller, faster, and more secure production image.
+
+### Challenges & Solutions
+
+- **Challenge: Concurrency in the Matching Engine.**
+  - **Problem:** The engine needed to handle simultaneous orders without causing race conditions.
+  - **Solution:** I chose `ConcurrentHashMap` and `Deque` to create a thread-safe order book structure, allowing for high-throughput, non-blocking reads and safe, concurrent writes.
+
+- **Challenge: Stateless Authentication in a Decoupled System.**
+  - **Problem:** Managing user sessions securely between a separate front-end and back-end without traditional sessions.
+  - **Solution:** I implemented a stateless JWT-based system. I also resolved the practical **Cross-Origin Resource Sharing (CORS)** issues that arose by configuring the Spring Boot back-end to securely accept requests from the front-end's origin.
+
+- **Challenge: Ensuring Atomic Portfolio Updates.**
+  - **Problem:** A trade involves multiple database updates. A failure at any step could lead to inconsistent data (e.g., a user's cash is debited, but they never receive the stock).
+  - **Solution:** I leveraged Spring's `@Transactional` annotation to ensure that all database operations for a single trade are treated as one atomic transaction, guaranteeing that the system's data remains consistent.
+
+## Tech Stack
+
+- **Back-end:** Spring Boot, Spring Security, Spring Data JPA
+- **Front-end:** React, Bootstrap
+- **Database:** PostgreSQL
+- **Containerization:** Docker, Docker Compose
+
+## Prerequisites
 
 - Docker
 - Docker Compose
 
-### Running the Application
+## How to Run
 
-1.  **Clone the repository** (if you haven't already).
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd match-engine
+   ```
 
-2.  **Navigate to the project root directory** in your terminal. This is the directory containing the `docker-compose.yml` file.
+2. **Run the application with Docker Compose:**
+   ```bash
+   docker-compose up --build
+   ```
 
-3.  **Build and start the services** using Docker Compose. Use the `--build` flag to ensure the latest code changes are included.
-
-    ```sh
-    docker-compose up --build
-    ```
-
-    This command will:
-    - Build the Spring Boot application from the source using a multi-stage Dockerfile.
-    - Start a PostgreSQL database container.
-    - Start the Match Engine application container.
-    - Connect the two containers on a shared Docker network.
-
-    The application will be available on `http://localhost:8080`.
-
-4.  **To stop the application**, press `Ctrl+C` in the terminal where Docker Compose is running. To stop and remove the containers, you can run:
-    ```sh
-    docker-compose down
-    ```
-    Your database data will be preserved in a `db-data` directory in your project folder.
-
----
-
-## How to Use the API
-
-You can interact with the API using any HTTP client (like `curl`, Postman) or by using the built-in Swagger UI.
-
-**Swagger UI URL**: `http://localhost:8080/swagger-ui.html`
-
-Here are some examples using `curl`:
-
-### 1. Add a New Tradable Instrument
-
-First, you need to add some stocks to the exchange. Let's add `AAPL` and a cash-equivalent, `USDT`.
-
-```sh
-# Add AAPL
-curl -X POST "http://localhost:8080/instruments" -H "Content-Type: application/json" -d'
-{
-  "ticker": "AAPL",
-  "description": "Apple Inc."
-}
-'
-
-# Add USDT (for cash balance)
-curl -X POST "http://localhost:8080/instruments" -H "Content-Type: application/json" -d'
-{
-  "ticker": "USDT",
-  "description": "Tether USD"
-}
-'
-```
-
-### 2. Create a New Client
-
-Create a client with a unique ID (e.g., `client-123`).
-
-```sh
-curl -X POST "http://localhost:8080/clients" -H "Content-Type: application/json" -d'
-{
-  "clientId": "client-123",
-  "name": "John Doe"
-}
-'
-```
-
-### 3. Add Balance for a Client
-
-Give your new client some "cash" (USDT) to trade with.
-
-```sh
-curl -X POST "http://localhost:8080/clients/client-123/add-balance" -H "Content-Type: application/json" -d'
-{
-  "ticker": "USDT",
-  "quantity": 100000
-}
-'
-```
-
-### 4. Submit an Order
-
-Now, `client-123` can submit a buy order for `AAPL`.
-
-```sh
-curl -X POST "http://localhost:8080/trade" -H "Content-Type: application/json" -d'
-{
-  "clientId": "client-123",
-  "ticker": "AAPL",
-  "side": "BUY",
-  "quantity": 10,
-  "price": 150.00
-}
-'
-```
-*(This order will be open and pending as there are no sell orders to match it with yet.)*
-
-### 5. Check Pending Orders
-
-You can see the open order you just created.
-
-```sh
-curl -X GET "http://localhost:8080/clients/client-123/pending-orders"
-```
-
-### 6. Check Client Portfolio
-
-Check the client's holdings. The USDT balance will be the same since the order hasn't been filled.
-
-```sh
-curl -X GET "http://localhost:8080/clients/client-123/portfolio"
-```
-
----
-
-## Project Structure
-
-- `src/main/java`: Contains the main application source code.
-  - `api/`: Generated API interfaces from OpenAPI.
-  - `model/`: Generated model classes from OpenAPI.
-  - `repository/`: Spring Data JPA repositories for database interaction.
-  - `*.java`: Core entities, services, and controllers.
-- `src/main/resources`:
-  - `api.yaml`: The OpenAPI specification for the entire API.
-  - `application.properties`: Spring Boot configuration, including database connection details.
-- `Dockerfile`: A multi-stage Dockerfile to build and run the application.
-- `docker-compose.yml`: Orchestrates the application and PostgreSQL database containers.
-- `pom.xml`: The Maven project configuration file.
+3. **Access the application:**
+   - The React front-end will be available at [http://localhost:3000](http://localhost:3000).
+   - The Spring Boot back-end API will be available at [http://localhost:8080](http://localhost:8080).

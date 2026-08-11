@@ -32,6 +32,11 @@ public class Client {
 
     private Instant createdAt;
 
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "client_roles", joinColumns = @JoinColumn(name = "client_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>();
+
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<PortfolioHolding> holdings = new HashSet<>();
 
@@ -41,5 +46,6 @@ public class Client {
         this.password = password;
         this.email = email;
         this.createdAt = Instant.now();
+        this.roles.add(Role.USER);
     }
 }
