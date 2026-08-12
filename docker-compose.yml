@@ -5,7 +5,7 @@ services:
     image: postgres:16
     container_name: postgres-db
     environment:
-      POSTGRES_DB: matchenginedb
+      POSTGRES_DB: matchenginedb_dev
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
