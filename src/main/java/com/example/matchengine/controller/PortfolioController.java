@@ -1,7 +1,6 @@
 package com.example.matchengine.controller;
 
 import com.example.matchengine.Client;
-import com.example.matchengine.ClientService;
 import com.example.matchengine.Order;
 import com.example.matchengine.OrderStatus;
 import com.example.matchengine.PortfolioHolding;
@@ -39,7 +38,7 @@ public class PortfolioController {
     public ResponseEntity<List<Order>> getPendingOrders() {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Client client = clientRepository.findByUsername(username).get();
-        List<Order> pendingOrders = orderRepository.findByClientIdAndStatusIn(client.getClientId(),
+        List<Order> pendingOrders = orderRepository.findByClient_ClientIdAndStatusIn(client.getClientId(),
                 List.of(OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED));
         return ResponseEntity.ok(pendingOrders);
     }

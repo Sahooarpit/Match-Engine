@@ -16,6 +16,7 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.core.annotation.Order(1)
 public class DataInitializer implements CommandLineRunner {
 
     private final ClientRepository clientRepository;
@@ -33,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        log.info("DataInitializer is running...");
         if (clientRepository.existsByUsername(adminUsername)) {
             log.info("Admin user '{}' already exists. Skipping creation.", adminUsername);
             return;

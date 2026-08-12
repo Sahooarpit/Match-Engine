@@ -3,8 +3,8 @@ package com.example.matchengine;
 import com.example.matchengine.repository.InstrumentRepository;
 import com.example.matchengine.repository.OrderRepository;
 import com.example.matchengine.repository.TradeRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +16,8 @@ import static java.lang.Math.min;
 
 @Service
 @RequiredArgsConstructor
-public class MatchEngine {
+@org.springframework.core.annotation.Order(2)
+public class MatchEngine implements CommandLineRunner {
 
     private final Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>(); // Key is now String
 
@@ -25,8 +26,8 @@ public class MatchEngine {
     private final ClientService clientService;
     private final InstrumentRepository instrumentRepository;
 
-    @PostConstruct
-    public void loadOrderBooksOnStartup() {
+    @Override
+    public void run(String... args) throws Exception {
         System.out.println("Loading order books from database...");
         // Initialize order books for all known instruments
         instrumentRepository.findAll().forEach(instrument -> {
@@ -53,7 +54,7 @@ public class MatchEngine {
     public List<Trade> processOrder(Order newOrder) {
         clientService.validateOrder(newOrder);
 
-        OrderBook book = orderBooks.computeIfAbsent(newOrder.getTicker(), ticker -> new OrderBook(ticker));
+        OrderBook book = orderBooks.computeIfAbsent(newOrder.getTicker(), OrderBook::new);
 
         List<Trade> executedTrades = new ArrayList<>();
         List<Order> modifiedBookOrders = new ArrayList<>();

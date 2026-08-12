@@ -15,5 +15,5 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
     List<Order> findByStatusIn(List<OrderStatus> statuses);
 
-    List<Order> findByClientIdAndStatusIn(String clientId, List<OrderStatus> statuses); // For getPendingOrders endpoint
+    List<Order> findByClient_ClientIdAndStatusIn(String clientId, List<OrderStatus> statuses);
 }
