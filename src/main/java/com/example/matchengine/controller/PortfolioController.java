@@ -1,12 +1,10 @@
 package com.example.matchengine.controller;
 
 import com.example.matchengine.Client;
+import com.example.matchengine.ClientService;
 import com.example.matchengine.Order;
-import com.example.matchengine.OrderStatus;
 import com.example.matchengine.PortfolioHolding;
-import com.example.matchengine.repository.ClientRepository;
-import com.example.matchengine.repository.OrderRepository;
-import com.example.matchengine.repository.PortfolioHoldingRepository;
+import com.example.matchengine.service.PortfolioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,24 +20,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PortfolioController {
 
-    private final PortfolioHoldingRepository portfolioHoldingRepository;
-    private final OrderRepository orderRepository;
-    private final ClientRepository clientRepository;
+    private final PortfolioService portfolioService;
+    private final ClientService clientService;
 
     @GetMapping
     public ResponseEntity<List<PortfolioHolding>> getPortfolio() {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        Client client = clientRepository.findByUsername(username).get();
-        List<PortfolioHolding> holdings = portfolioHoldingRepository.findAllByClientClientId(client.getClientId());
+        Client client = clientService.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Client not found for username: " + username));
+        List<PortfolioHolding> holdings = portfolioService.getPortfolio(client.getClientId());
         return ResponseEntity.ok(holdings);
     }
 
     @GetMapping("/orders")
     public ResponseEntity<List<Order>> getPendingOrders() {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        Client client = clientRepository.findByUsername(username).get();
-        List<Order> pendingOrders = orderRepository.findByClient_ClientIdAndStatusIn(client.getClientId(),
-                List.of(OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED));
+        Client client = clientService.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Client not found for username: " + username));
+        List<Order> pendingOrders = portfolioService.getPendingOrders(client.getClientId());
         return ResponseEntity.ok(pendingOrders);
     }
 }

@@ -4,10 +4,12 @@ import com.example.matchengine.repository.ClientRepository;
 import com.example.matchengine.repository.InstrumentRepository;
 import com.example.matchengine.repository.PortfolioHoldingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,12 +18,29 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
     private final PortfolioHoldingRepository portfolioHoldingRepository;
-    private final InstrumentRepository instrumentRepository; // Add InstrumentRepository
+    private final InstrumentRepository instrumentRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public Client registerClient(Client client) {
+        if (clientRepository.findByUsername(client.getUsername()).isPresent()) {
+            throw new IllegalStateException("Username is already taken!");
+        }
+        client.setPassword(passwordEncoder.encode(client.getPassword()));
+        return clientRepository.save(client);
+    }
+
+    public Optional<Client> findByUsername(String username) {
+        return clientRepository.findByUsername(username);
+    }
+
+    public List<Client> findAllClients() {
+        return clientRepository.findAll();
+    }
 
     public void validateOrder(Order order) {
         Client client = order.getClient();
 
-        // Validate that the instrument exists
         instrumentRepository.findById(order.getTicker())
                 .orElseThrow(() -> new IllegalStateException("Invalid ticker: " + order.getTicker()));
 
@@ -45,24 +64,20 @@ public class ClientService {
 
     @Transactional
     public void updateHolding(String clientId, String ticker, BigDecimal quantityChange) {
-        Client client = clientRepository.findById(clientId).get();
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalStateException("Client not found with ID: " + clientId));
 
-        // Validate that the instrument exists before updating a holding
         instrumentRepository.findById(ticker)
                 .orElseThrow(() -> new IllegalStateException("Invalid ticker: " + ticker));
 
-        Optional<PortfolioHolding> existingHolding = portfolioHoldingRepository.findByClientClientIdAndTicker(clientId, ticker);
+        PortfolioHolding holding = portfolioHoldingRepository.findByClientClientIdAndTicker(clientId, ticker)
+                .orElse(new PortfolioHolding(client, ticker, BigDecimal.ZERO));
 
-        PortfolioHolding holding;
-        if (existingHolding.isPresent()) {
-            holding = existingHolding.get();
-            holding.setQuantity(holding.getQuantity().add(quantityChange));
-        } else {
-            holding = new PortfolioHolding(client, ticker, quantityChange);
-        }
-        if (holding.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
+        BigDecimal newQuantity = holding.getQuantity().add(quantityChange);
+        if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalStateException("Attempted to create negative holding for client " + clientId + " for ticker " + ticker);
         }
+        holding.setQuantity(newQuantity);
         portfolioHoldingRepository.save(holding);
     }
 }

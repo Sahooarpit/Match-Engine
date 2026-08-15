@@ -3,8 +3,7 @@ package com.example.matchengine.controller;
 import com.example.matchengine.Client;
 import com.example.matchengine.ClientService;
 import com.example.matchengine.Instrument;
-import com.example.matchengine.repository.ClientRepository;
-import com.example.matchengine.repository.InstrumentRepository;
+import com.example.matchengine.service.InstrumentService;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -25,21 +24,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final ClientRepository clientRepository;
-    private final InstrumentRepository instrumentRepository;
     private final ClientService clientService;
+    private final InstrumentService instrumentService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Client>> getAllUsers() {
-        return ResponseEntity.ok(clientRepository.findAll());
+        return ResponseEntity.ok(clientService.findAllClients());
     }
 
     @PostMapping("/instruments")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Instrument> addInstrument(@Valid @RequestBody InstrumentRequest instrumentRequest) {
-        Instrument instrument = new Instrument(instrumentRequest.getTicker(), instrumentRequest.getDescription());
-        instrumentRepository.save(instrument);
+        Instrument instrument = instrumentService.addInstrument(instrumentRequest.getTicker(), instrumentRequest.getDescription());
         return new ResponseEntity<>(instrument, HttpStatus.CREATED);
     }
 

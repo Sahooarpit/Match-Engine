@@ -21,6 +21,16 @@ The back-end is built with Spring Boot and features a real-time, in-memory **Ord
 
 Data integrity is paramount in a financial application. To guarantee this, all critical database operations (such as updating user balances and stock holdings after a trade) are wrapped in a single service method and annotated with `@Transactional`. This ensures **ACID properties**, meaning a trade and its corresponding portfolio updates succeed or fail as a single, atomic unit, preventing data corruption.
 
+### Architectural Best Practices: Separation of Layers
+
+A key architectural principle implemented in this project is the strict **separation of layers**. The application is divided into three distinct tiers:
+
+1.  **Controller Layer:** Responsible only for handling HTTP requests and responses. It acts as the entry point, delegating all business logic to the service layer.
+2.  **Service Layer:** Contains all the core business logic. It orchestrates repository calls, performs validations, and manages transactions. This centralizes the application's logic, making it more maintainable and reusable.
+3.  **Repository Layer:** Responsible for all data access operations, interacting directly with the database.
+
+This separation makes the codebase cleaner, more organized, and significantly easier to test, as each layer can be tested in isolation.
+
 ### Security
 
 Security is implemented from the ground up using Spring Security with a stateless **JSON Web Token (JWT)** authentication flow. When a user logs in, the back-end generates a signed JWT. This token is then required in the `Authorization` header for all protected API endpoints. A custom `JwtRequestFilter` intercepts each request to validate the token, ensuring that every API call is authenticated without relying on server-side sessions. This stateless approach is crucial for scalability and building microservices-ready applications.
@@ -34,6 +44,10 @@ The front-end is a responsive **Single-Page Application (SPA)** built with React
 The entire application stack is containerized using **Docker and Docker Compose**, allowing the project (front-end, back-end, and database) to be launched with a single command (`docker-compose up`). For the React front-end, I implemented a **multi-stage Docker build**. The first stage uses a Node.js image to build the static assets, and the second stage copies these assets into a lightweight `nginx` container for serving. This best practice results in a smaller, faster, and more secure production image.
 
 ### Challenges & Solutions
+
+- **Challenge: Refactoring to a Code-First, Service-Oriented Architecture.**
+  - **Problem:** The project was initially developed with an API-first approach, which led to some business logic residing directly in the controllers. This made the controllers bloated and tightly coupled to the data layer.
+  - **Solution:** I undertook a significant refactoring effort to move all business logic into a dedicated **service layer**. This involved creating new service classes (`ClientService`, `PortfolioService`, `InstrumentService`) and updating the controllers to delegate all logic to these services. This resulted in leaner controllers, better separation of concerns, and a more maintainable and testable codebase.
 
 - **Challenge: Concurrency in the Matching Engine.**
   - **Problem:** The engine needed to handle simultaneous orders without causing race conditions.

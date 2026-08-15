@@ -1,11 +1,11 @@
 package com.example.matchengine.controller;
 
 import com.example.matchengine.Client;
+import com.example.matchengine.ClientService;
 import com.example.matchengine.MatchEngine;
 import com.example.matchengine.Order;
 import com.example.matchengine.Trade;
 import com.example.matchengine.dto.OrderRequest;
-import com.example.matchengine.repository.ClientRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +22,12 @@ import java.util.List;
 public class TradeController {
 
     private final MatchEngine matchEngine;
-    private final ClientRepository clientRepository;
+    private final ClientService clientService;
 
     @PostMapping("/trade")
     public ResponseEntity<String> submitOrder(@Valid @RequestBody OrderRequest orderRequest) {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        Client client = clientRepository.findByUsername(username)
+        Client client = clientService.findByUsername(username)
                 .orElseThrow(() -> new IllegalStateException("Client not found for username: " + username));
 
         Order order = new Order(
