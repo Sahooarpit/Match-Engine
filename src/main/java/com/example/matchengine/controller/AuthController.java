@@ -54,14 +54,14 @@ public class AuthController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class JwtRequest {
+    public static class JwtRequest {
         private String username;
         private String password;
     }
 
     @Data
     @AllArgsConstructor
-    private static class JwtResponse {
+    public static class JwtResponse {
         private String token;
     }
 }
