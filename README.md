@@ -21,6 +21,88 @@ The back-end is built with Spring Boot and features a real-time, in-memory **Ord
 
 Data integrity is paramount in a financial application. To guarantee this, all critical database operations (such as updating user balances and stock holdings after a trade) are wrapped in a single service method and annotated with `@Transactional`. This ensures **ACID properties**, meaning a trade and its corresponding portfolio updates succeed or fail as a single, atomic unit, preventing data corruption.
 
+### Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph "Browser/Client"
+        A[Client Application]
+    end
+
+    subgraph "Spring Boot Application"
+        subgraph "Controller Layer"
+            C1[AuthController]
+            C2[TradeController]
+            C3[PortfolioController]
+            C4[AdminController]
+        end
+
+        subgraph "Service Layer"
+            S1[ClientService]
+            S2[PortfolioService]
+            S3[InstrumentService]
+            S4[MatchEngine]
+            S5[ClientDetailsService]
+        end
+
+        subgraph "Repository Layer"
+            R1[ClientRepository]
+            R2[OrderRepository]
+            R3[PortfolioHoldingRepository]
+            R4[InstrumentRepository]
+            R5[TradeRepository]
+        end
+
+        subgraph "Security"
+            SEC1[JwtRequestFilter]
+            SEC2[JwtUtil]
+            SEC3[SecurityConfig]
+        end
+
+        subgraph "Database"
+            DB[(PostgreSQL)]
+        end
+    end
+
+    A -- HTTP Request --> SEC1
+    SEC1 -- Validates JWT --> C1
+    SEC1 -- Validates JWT --> C2
+    SEC1 -- Validates JWT --> C3
+    SEC1 -- Validates JWT --> C4
+
+    C1 -- /api/auth/register --> S1
+    C1 -- /api/auth/login --> S5
+
+    C2 -- /trade --> S4
+    C2 -- /trade --> S1
+
+    C3 -- /portfolio --> S1
+    C3 -- /portfolio --> S2
+
+    C4 -- /api/admin --> S1
+    C4 -- /api/admin --> S3
+    C4 -- /api/admin --> S1
+
+    S1 -- Uses --> R1
+    S2 -- Uses --> R2
+    S2 -- Uses --> R3
+    S3 -- Uses --> R4
+    S4 -- Uses --> R2
+    S4 -- Uses --> R5
+    S4 -- Uses --> S1
+    S5 -- Uses --> R1
+
+    R1 -- Interacts with --> DB
+    R2 -- Interacts with --> DB
+    R3 -- Interacts with --> DB
+    R4 -- Interacts with --> DB
+    R5 -- Interacts with --> DB
+
+    SEC1 -- Uses --> SEC2
+    SEC1 -- Uses --> S5
+    C1 -- Uses --> SEC2
+```
+
 ### Architectural Best Practices: Separation of Layers
 
 A key architectural principle implemented in this project is the strict **separation of layers**. The application is divided into three distinct tiers:
